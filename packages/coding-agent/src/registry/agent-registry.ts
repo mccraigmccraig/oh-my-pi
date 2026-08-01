@@ -28,7 +28,7 @@ export type AgentStatus = "running" | "idle" | "parked" | "aborted";
  *   attribution and Agent Hub observability, but never a peer — hidden from
  *   agent-facing rosters (`hub`, `history://`) and not messageable/revivable.
  */
-export type AgentKind = "main" | "sub" | "advisor";
+export type AgentKind = "main" | "sub" | "advisor" | "remote";
 
 export interface AgentRef {
 	id: string;
@@ -203,7 +203,10 @@ export class AgentRegistry {
 	 */
 	listVisibleTo(id: string): AgentRef[] {
 		return this.list().filter(
-			ref => ref.id !== id && ref.kind !== "advisor" && (ref.status === "running" || ref.status === "idle"),
+			ref =>
+				ref.id !== id &&
+				ref.kind !== "advisor" &&
+				(ref.status === "running" || ref.status === "idle" || ref.kind === "remote"),
 		);
 	}
 
