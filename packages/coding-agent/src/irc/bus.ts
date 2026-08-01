@@ -38,6 +38,17 @@ export interface IrcDeliveryReceipt {
 	error?: string;
 }
 
+/**
+ * Transport for messages whose recipient is absent from this process's registry (a
+ * local-registry MISS). Installed via {@link IrcBus.setRemoteTransport} by the murmur bridge
+ * extension; `send` invokes it ONLY on the `!ref` branch — never for aborted / advisor /
+ * no-session / handoff-error recipients (those are local-but-broken and stay `failed`). It
+ * returns a synthesized {@link IrcDeliveryReceipt} so callers see a uniform outcome.
+ */
+export interface RemoteTransport {
+	send(message: IrcMessage): Promise<IrcDeliveryReceipt>;
+}
+
 interface IrcWaiter {
 	from?: string;
 	resolve: (msg: IrcMessage) => void;
@@ -66,12 +77,18 @@ export class IrcBus {
 	readonly #lifecycle: () => AgentLifecycleManager;
 	readonly #mailboxes = new Map<string, IrcMessage[]>();
 	readonly #waiters = new Map<string, IrcWaiter[]>();
+	#remote: RemoteTransport | undefined;
 
 	constructor(registry: AgentRegistry = AgentRegistry.global(), lifecycle?: AgentLifecycleManager) {
 		this.#registry = registry;
 		// Lazy: the lifecycle global self-constructs against the global registry,
 		// so only touch it when a parked recipient actually needs reviving.
 		this.#lifecycle = () => lifecycle ?? AgentLifecycleManager.global();
+	}
+
+	/** Install (or clear) the transport fired on a local-registry miss (murmur-l5vv). */
+	setRemoteTransport(transport: RemoteTransport | undefined): void {
+		this.#remote = transport;
 	}
 
 	/**
@@ -105,6 +122,9 @@ export class IrcBus {
 		const message: IrcMessage = { ...msg, id: Snowflake.next(), ts: Date.now() };
 		const ref = this.#registry.get(message.to);
 		if (!ref) {
+			// Local-registry MISS: hand off to the remote transport if one is installed
+			// (murmur bridge), else fail. This is the ONLY branch that may leave the process.
+			if (this.#remote) return this.#remote.send(message);
 			return {
 				to: message.to,
 				outcome: "failed",
