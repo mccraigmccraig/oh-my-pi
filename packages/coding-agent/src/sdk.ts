@@ -631,7 +631,7 @@ export type { MCPManager, MCPServerConfig, MCPServerConnection, MCPToolsLoadResu
 export { type AgentRef, AgentRegistry, MAIN_AGENT_ID } from "./registry/agent-registry";
 // IRC wire-shape types for the pi.irc extension surface (the murmur bridge). The IrcBus
 // class itself is intentionally NOT exported — extensions reach inbound delivery via pi.irc.
-export type { IrcDeliveryReceipt, IrcMessage } from "./irc/bus";
+export type { IrcDeliveryReceipt, IrcMessage, RemoteTransport } from "./irc/bus";
 export type { Tool } from "./tools";
 export { buildDirectoryTree, buildWorkspaceTree, type DirectoryTree, type WorkspaceTree } from "./workspace-tree";
 

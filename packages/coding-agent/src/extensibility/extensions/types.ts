@@ -44,7 +44,7 @@ import type { EditToolDetails } from "../../edit";
 import type { PythonResult } from "../../eval/py/executor";
 import type { BashResult } from "../../exec/bash-executor";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
-import type { IrcDeliveryReceipt, IrcMessage } from "../../irc/bus";
+import type { IrcDeliveryReceipt, IrcMessage, RemoteTransport } from "../../irc/bus";
 import type * as PiCodingAgent from "../../index";
 import type { LocalProtocolOptions } from "../../internal-urls/local-protocol";
 import type { MemoryRuntimeContext } from "../../memory-backend";
@@ -1099,6 +1099,14 @@ export interface IrcApi {
 		msg: Omit<IrcMessage, "id" | "ts">,
 		opts?: { expectsReply?: boolean; suppressRelay?: boolean },
 	): Promise<{ receipt: IrcDeliveryReceipt; id: string }>;
+
+	/**
+	 * Install (or clear, with `undefined`) the transport fired on a local-registry miss — an
+	 * omp agent messaging a peer absent from this process's registry (a remote murmur peer).
+	 * OPTIONAL: present only on omp builds carrying the outbound/[3] transport seam (murmur-l5vv);
+	 * capability-detected by callers, absent on inbound-only builds.
+	 */
+	setRemoteTransport?(transport: RemoteTransport | undefined): void;
 }
 
 /**

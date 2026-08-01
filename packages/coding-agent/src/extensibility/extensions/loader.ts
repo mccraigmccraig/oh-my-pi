@@ -147,6 +147,7 @@ class ConcreteExtensionAPI implements ExtensionAPI, IExtensionRuntime {
 	readonly zod = zodModule;
 	readonly irc: IrcApi = {
 		deliverInbound: (msg, opts) => IrcBus.global().deliverInbound(msg, opts),
+		setRemoteTransport: transport => IrcBus.global().setRemoteTransport(transport),
 	};
 	readonly flagValues = new Map<string, boolean | string>();
 	readonly pendingProviderRegistrations: Array<{
