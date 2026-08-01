@@ -629,6 +629,9 @@ export type { MCPManager, MCPServerConfig, MCPServerConnection, MCPToolsLoadResu
 // embedding several concurrent top-level sessions in one process (the default
 // global registry admits only one "Main" per process generation).
 export { type AgentRef, AgentRegistry, MAIN_AGENT_ID } from "./registry/agent-registry";
+// IRC wire-shape types for the pi.irc extension surface (the murmur bridge). The IrcBus
+// class itself is intentionally NOT exported — extensions reach inbound delivery via pi.irc.
+export type { IrcDeliveryReceipt, IrcMessage } from "./irc/bus";
 export type { Tool } from "./tools";
 export { buildDirectoryTree, buildWorkspaceTree, type DirectoryTree, type WorkspaceTree } from "./workspace-tree";
 

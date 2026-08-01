@@ -25,6 +25,7 @@ import { loadCapability } from "../../discovery";
 import { getExtensionNameFromPath } from "../../discovery/helpers";
 import type { ExecOptions } from "../../exec/exec";
 import { execCommand } from "../../exec/exec";
+import { IrcBus } from "../../irc/bus";
 // Runtime self-reference: dereference this namespace only inside loader functions to keep the index.ts cycle safe.
 import * as PiCodingAgent from "../../index";
 import type { CustomMessagePayload } from "../../session/messages";
@@ -41,6 +42,7 @@ import type {
 	ExtensionContext,
 	ExtensionFactory,
 	ExtensionRuntime as IExtensionRuntime,
+	IrcApi,
 	LoadExtensionsResult,
 	MessageRenderer,
 	ProviderConfig,
@@ -143,6 +145,9 @@ class ConcreteExtensionAPI implements ExtensionAPI, IExtensionRuntime {
 	readonly typebox = TypeBox;
 	readonly arktype = Type;
 	readonly zod = zodModule;
+	readonly irc: IrcApi = {
+		deliverInbound: (msg, opts) => IrcBus.global().deliverInbound(msg, opts),
+	};
 	readonly flagValues = new Map<string, boolean | string>();
 	readonly pendingProviderRegistrations: Array<{
 		name: string;
