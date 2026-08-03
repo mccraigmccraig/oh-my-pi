@@ -39,4 +39,37 @@ describe("hub list", () => {
 		expect(content.text).toContain("parked");
 		expect(registry.get("Worker")?.sessionFile).toBe(workerSessionFile);
 	});
+
+	it("still restores persisted peers when only a remote proxy is in memory (murmur-q00p)", async () => {
+		using tempDir = TempDir.createSync("@omp-hub-list-remote-guard-");
+		const sessionFile = path.join(tempDir.path(), "main.jsonl");
+		const workerSessionFile = path.join(tempDir.path(), "main", "Worker.jsonl");
+		await Bun.write(sessionFile, "");
+		await Bun.write(workerSessionFile, "");
+
+		const registry = new AgentRegistry();
+		registry.register({
+			id: MAIN_AGENT_ID,
+			displayName: MAIN_AGENT_ID,
+			kind: "main",
+			session: null,
+			sessionFile,
+			status: "running",
+		});
+		// A seeded remote proxy must NOT suppress the persisted-subagent disk restore.
+		registry.register({
+			id: "remote-peer",
+			displayName: "remote-peer",
+			kind: "remote",
+			session: null,
+			status: "idle",
+		});
+
+		const result = await executeList(registry, MAIN_AGENT_ID);
+		if (!result.details) throw new Error("Expected coordination details");
+
+		const ids = (result.details.peers ?? []).map(peer => peer.id);
+		expect(ids).toContain("Worker"); // restored from disk despite the remote proxy in memory
+		expect(ids).toContain("remote-peer"); // remotes are still listed as peers
+	});
 });

@@ -92,7 +92,15 @@ export async function executeList(
 	senderId: string,
 ): Promise<AgentToolResult<CoordinationDetails>> {
 	let refs = registry.list();
-	if (!refs.some(ref => ref.id !== senderId && ref.status !== "aborted" && ref.kind !== "advisor")) {
+	// Only LOCAL restorable peers count here: a remote proxy (murmur-q00p) is not disk-restorable, so
+	// it must not suppress the persisted-subagent scan on a resumed session (else local parked
+	// subagents stay absent and direct sends to them miss instead of reviving). The peer list below
+	// still includes remotes.
+	if (
+		!refs.some(
+			ref => ref.id !== senderId && ref.status !== "aborted" && ref.kind !== "advisor" && ref.kind !== "remote",
+		)
+	) {
 		await registerPersistedSubagents(registry, registry.get(senderId)?.sessionFile);
 		refs = registry.list();
 	}
