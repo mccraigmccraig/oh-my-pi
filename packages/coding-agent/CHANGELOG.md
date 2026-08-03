@@ -29,6 +29,7 @@
 - Added a configurable per-request web search timeout via `providers.webSearchTimeoutSeconds` ([#7197](https://github.com/can1357/oh-my-pi/pull/7197) by [@will-bogusz](https://github.com/will-bogusz)).
 - Added turn-aware `/tree` navigation: Alt+Up/Alt+Down traverses previous/next user or assistant turns while skipping tool and bookkeeping entries, Home/End jumps to the first/last visible item, and PageUp/PageDown moves by a visible page.
 - Added `pi.irc.deliverInbound` — a scoped extension API (`ExtensionAPI.irc`) for delivering an inbound IRC message (e.g. from an external transport) into a local agent's session on the process-global bus; local-only, so a registry miss returns `failed` and never re-forwards, and it returns omp's freshly-minted native message id so callers can correlate it ([#7400](https://github.com/can1357/oh-my-pi/pull/7400)).
+- Added the outbound half of the extension IRC bridge: `pi.irc.setRemoteTransport` (install a transport for recipients absent from this process's registry), the exported `RemoteTransport`/`IrcMessage`/`IrcDeliveryReceipt` wire shapes, and a remote `AgentKind` so cross-process peers are addressable and broadcastable like local agents ([#7401](https://github.com/can1357/oh-my-pi/pull/7401)).
 
 ### Changed
 
