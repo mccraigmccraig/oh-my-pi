@@ -367,7 +367,10 @@ export class AgentHubOverlayComponent extends Container {
 
 	#refreshRows(): void {
 		const selectedId = this.#rows[this.#selectedRow]?.id;
-		const refs = this.#registry.list().filter(ref => ref.id !== MAIN_AGENT_ID);
+		// Remote proxies (murmur-q00p) are messaging peers, not local sessions: they have no
+		// session/transcript and the hub's focus/revive/kill act on the local lifecycle, so exclude
+		// them here. They stay discoverable via `hub list` and reachable by broadcast.
+		const refs = this.#registry.list().filter(ref => ref.id !== MAIN_AGENT_ID && ref.kind !== "remote");
 
 		if (!this.#rowOrder) {
 			// First refresh (usually the constructor): order by status, then recency.
