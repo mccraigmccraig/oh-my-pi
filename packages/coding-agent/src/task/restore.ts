@@ -101,7 +101,7 @@ async function restoreSubagents(session: AgentSession, options: RestoreOptions):
 					artifactsDir: path.dirname(sessionFileOfRef),
 					maxRuntimeMs: cfgTaskMaxRuntimeMs.get(session.settings),
 				});
-				const text = formatTaskResultSummary(result, { totalDurationMs: result.durationMs });
+				const text = formatTaskResultSummary(result, { totalDurationMs: result.durationMs, registry });
 				const structuredOutput = result.structuredOutput;
 				if (result.aborted || result.exitCode !== 0 || result.error !== undefined) {
 					throw new AsyncJobError(text, structuredOutput);
