@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added cross-process IRC for extensions: `pi.irc.setRemoteTransport(namespace, transport)` claims an `@<namespace>/…` id space and routes `write agent://@<namespace>/<name>` through the transport, `pi.irc.registerRemotePeer` lists those peers as `remote` rows in `read history://`, and `pi.irc.deliverInbound` hands a message from another process to a local agent as a peer message. Independent root sessions sharing one registry co-own a bridge's claim, and a disabled bridge releases it. A runnable reference bridge and peer CLI live in `examples/extensions/remote-irc-bridge/` ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+
+### Fixed
+
+- Fixed `-p` print mode dying with `AgentBusyError` when a bridged peer message woke the session before the initial prompt dispatched; the prompt now queues behind the wake turn ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+
 ## [18.5.1] - 2026-10-03
 
 ### Added
@@ -614,10 +622,6 @@
 - Improved IDA database resource management with project sharing, bounded concurrency, idle cleanup, autosave, and clearer database status in listings.
 - Improved runtime configuration behavior with type-safe layered settings, live updates, and safe sequential saves.
 - Improved authentication and credential management to support live broker and credential-store changes.
-### Added
-
-- Added `pi.irc.deliverInbound` — a scoped extension API (`ExtensionAPI.irc`) for delivering an inbound IRC message (e.g. from an external transport) into a local agent's session on the session registry’s IRC bus; local-only, so a registry miss returns `failed` and never re-forwards, and it returns omp's freshly-minted native message id so callers can correlate it ([#14071](https://github.com/can1357/oh-my-pi/pull/14071)).
-- Added the outbound half of the extension IRC bridge on a `@<namespace>/<name>` remote-agent scheme: `pi.irc.setRemoteTransport(namespace, transport)` claims a namespace unique within that registry’s IRC bus (a second live claim by a different extension throws; the same extension re-loaded in a subagent — e.g. inherited by a spawned child — shares the claim) and installs its outbound transport; `pi.irc.registerRemotePeer({ name })` / `unregisterRemotePeer` seed and retract `@ns/name` proxies under that namespace, attributed to the owning extension so a failed load or session teardown releases them (the bridge reads its own session agent id from `ctx.agent.id`). Routing is prefix-authoritative: an `@ns/name` recipient goes to its namespace's transport (with the bare name in `opts.toName`) whether or not a proxy is registered, while a bare unknown id stays local (`Unknown agent`) and never leaves the process. Local agent ids may not start with `@`, so the local and remote id spaces never collide. Exports the `RemoteTransport`/`IrcMessage`/`IrcDeliveryReceipt` wire shapes and a remote `AgentKind` so cross-process peers are addressable and broadcastable like local agents ([#14071](https://github.com/can1357/oh-my-pi/pull/14071)).
 
 ### Fixed
 
