@@ -11,6 +11,7 @@
 - Fixed `-p` print mode dying with `AgentBusyError` when a bridged peer message woke the session before the initial prompt dispatched; the prompt now queues behind the wake turn ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
 - Fixed an `EPIPE: broken pipe` unhandled rejection crashing the session when a debug adapter, eval kernel, IDA worker, or RPC server exits mid-write (seen on Windows) ([#14196](https://github.com/can1357/oh-my-pi/pull/14196) by [@andrebrait](https://github.com/andrebrait))
 - Added the `tui.spinnerInterval` setting, `PI_SPINNER_INTERVAL` environment variable, and `--spinner-interval <ms>` flag to slow every spinner — the working row, live tool cards, the status-line brand spinner, and the terminal title — or pin them static with `0`; the default cadence is unchanged.
+- Added the `tui.maxFps` setting, `PI_MAX_FPS` environment variable, and `--max-fps <n>` flag to cap how often the TUI repaints (default unchanged at 30); animations and streaming text coalesce into frames under the ceiling while keystroke echo keeps the full rate.
 
 ## [18.5.1] - 2026-10-03
 
