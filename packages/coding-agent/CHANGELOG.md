@@ -12,6 +12,7 @@
 - Fixed an `EPIPE: broken pipe` unhandled rejection crashing the session when a debug adapter, eval kernel, IDA worker, or RPC server exits mid-write (seen on Windows) ([#14196](https://github.com/can1357/oh-my-pi/pull/14196) by [@andrebrait](https://github.com/andrebrait))
 - Added the `tui.spinnerInterval` setting, `PI_SPINNER_INTERVAL` environment variable, and `--spinner-interval <ms>` flag to slow every spinner — the working row, live tool cards, the status-line brand spinner, and the terminal title — or pin them static with `0`; the default cadence is unchanged.
 - Added the `tui.maxFps` setting, `PI_MAX_FPS` environment variable, and `--max-fps <n>` flag to cap how often the TUI repaints (default unchanged at 30); animations and streaming text coalesce into frames under the ceiling while keystroke echo keeps the full rate.
+- Added the `tui.motion` setting (`full` / `reduced` / `none`), `PI_MOTION` environment variable, and `--motion <mode>` flag: one switch over every animation — spinner cadence, repaint ceiling, shimmer, and the status-line blink/fade — for many-pane and reduced-motion use; an explicitly set `tui.spinnerInterval`, `tui.maxFps` or `display.shimmer` still wins over the preset. `display.shimmer` can now also be set with `PI_SHIMMER` or `--shimmer <mode>`. Defaults are unchanged.
 
 ## [18.5.1] - 2026-10-03
 
