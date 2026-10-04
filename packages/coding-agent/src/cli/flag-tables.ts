@@ -32,8 +32,7 @@
 
 import { isServiceTierOpenAISettingValue, SERVICE_TIER_OPENAI_VALUES } from "../config/service-tier";
 import { parseMaxFps } from "@oh-my-pi/pi-tui/frame-rate";
-import type { ShimmerMode } from "@oh-my-pi/pi-tui/theme/shimmer";
-import { type MotionMode, parseMotionMode } from "../config/motion-presets";
+import { parseMotionMode } from "../config/motion-presets";
 import { parseSpinnerInterval } from "@oh-my-pi/pi-tui/spinner-clock";
 import type { ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
 import type { Args } from "./args";
