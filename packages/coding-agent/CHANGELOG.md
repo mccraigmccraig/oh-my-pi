@@ -6,6 +6,11 @@
 
 - Pinned sessions show a pin beside their title in the status line and the band composer's title, and `/unpin [session id]` unpins a session ([#17848](https://github.com/can1357/oh-my-pi/pull/17848) by [@SuperUserA](https://github.com/SuperUserA))
 - Added a fullscreen extension link browser for picking links already in terminal scrollback: press Alt+O again (or Page Up) while link tags are shown, or Alt+O with no extension link on screen ([#16476](https://github.com/can1357/oh-my-pi/pull/16476) by [@materemias](https://github.com/materemias))
+- Added cross-process IRC for extensions: `pi.irc.setRemoteTransport(namespace, transport)` claims an `@<namespace>/…` id space and routes `write agent://@<namespace>/<name>` through the transport, `pi.irc.registerRemotePeer` lists those peers as `remote` rows in `read history://`, and `pi.irc.deliverInbound` hands a message from another process to a local agent as a peer message. Independent root sessions sharing one registry co-own a bridge's claim, and a disabled bridge releases it. A runnable reference bridge and peer CLI live in `examples/extensions/remote-irc-bridge/` ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+
+### Fixed
+
+- Fixed `-p` print mode dying with `AgentBusyError` when a bridged peer message woke the session before the initial prompt dispatched; the prompt now queues behind the wake turn ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
 
 ## [18.16.0] - 2026-11-02
 

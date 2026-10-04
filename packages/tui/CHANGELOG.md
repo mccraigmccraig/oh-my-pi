@@ -6,6 +6,7 @@
 
 - `StatusLineComponent.setSessionPinned()` / `setPinnedSessionIds()` / `isSessionPinned()` track pinned sessions; `session_name` prefixes the theme's pin icon for a pinned session ([#17848](https://github.com/can1357/oh-my-pi/pull/17848) by [@SuperUserA](https://github.com/SuperUserA))
 - `LinkBrowserComponent` (`overlays/link-browser`) replays a transcript fullscreen with extension link hint tags that each link keeps while it stays in view; `LinkHints` / `viewportLinkTargets()` (`render/link-hints`) share tag assignment (preferring the letters a label starts with) and painting with `Composer`; `ChatTranscriptBuilder` accepts `textRenderers` ([#16476](https://github.com/can1357/oh-my-pi/pull/16476) by [@materemias](https://github.com/materemias))
+- Added `remote` to the Agent Hub record kinds: the hub lists only agents with a local session or transcript (remote cross-process peers stay reachable via `read history://` and `write agent://`), and `write agent://` receipt rows sanitize externally supplied recipient ids and error text before rendering ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
 
 ### Fixed
 
