@@ -14,6 +14,9 @@
 ### Fixed
 
 - Fixed `-p` print mode dying with `AgentBusyError` when a bridged peer message woke the session before the initial prompt dispatched; the prompt now queues behind the wake turn ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- Added the `tui.spinnerInterval` setting, `PI_SPINNER_INTERVAL` environment variable, and `--spinner-interval <ms>` flag to slow every spinner — the working row, live tool cards, the status-line brand spinner, and the terminal title — or pin them static with `0`; the default cadence is unchanged ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- Added the `tui.maxFps` setting, `PI_MAX_FPS` environment variable, and `--max-fps <n>` flag to cap how often the TUI repaints (default unchanged at 30); animations and streaming text coalesce into frames under the ceiling while keystroke echo keeps the full rate ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- Added the `tui.motion` setting (`full` / `reduced` / `none`), `PI_MOTION` environment variable, and `--motion <mode>` flag: one switch over every animation — spinner cadence, shimmer, and the status-line blink/fade; streaming text keeps its frame rate — for many-pane and reduced-motion use; an explicitly set `tui.spinnerInterval`, `tui.maxFps` or `display.shimmer` still wins over the preset. `display.shimmer` can now also be set with `PI_SHIMMER` or `--shimmer <mode>`. Defaults are unchanged ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
 
 ## [18.16.0] - 2026-11-02
 
