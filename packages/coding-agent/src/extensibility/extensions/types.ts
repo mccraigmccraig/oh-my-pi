@@ -86,6 +86,9 @@ import type { LiveTranscript } from "../../live/controller";
 import type { ExecOptions, ExecResult } from "../../exec/exec";
 import type * as PiCodingAgent from "../../index";
 import type { LocalProtocolOptions } from "../../internal-urls/local-protocol";
+import type { ProtocolHandler } from "../../internal-urls/types";
+/** Internal URL handler types, for extensions implementing {@link ExtensionAPI.registerUrlScheme}. */
+export type * from "../../internal-urls/types";
 import type { LoopLimitConfig } from "../../modes/loop-limit";
 import type { MemoryRuntimeContext } from "../../memory-backend";
 import type { CustomEditor } from "@oh-my-pi/pi-tui/prompt/custom-editor";
@@ -2023,6 +2026,27 @@ export interface ExtensionAPI {
 	 * characters, or not URL scheme syntax) or a reserved one (`http`, `https`, `file`, `mailto`, …).
 	 */
 	registerLinkScheme(scheme: string): void;
+
+	/**
+	 * Route the internal URL scheme `handler.scheme` (`<scheme>://…`) to `handler` in this process:
+	 * `read` resolves it, `write` writes it when `handler.spec.write.via` is `"handler"`, the composer
+	 * completes it when the handler has `complete()`, and the write approval gate applies
+	 * `spec.write.tier` like any built-in scheme's. The router is shared by every session in the
+	 * process, so handlers receive the calling session in `context` (`cwd`, `sessionId`,
+	 * `sessionFile`, the tool `session` for tool calls) and must not assume a session of their own.
+	 *
+	 * A scheme belongs to one extension source: the extension's resolved entry path (an inline SDK
+	 * factory's source id). Every load of that source — the root session's and each subagent's — may
+	 * register it; the earliest live registration serves, and the scheme stays routed until the last
+	 * one is released. Throws for invalid scheme syntax (`^[a-z][a-z0-9+.-]*$` after lowercasing),
+	 * an OMP-owned or standard scheme (`local`, `http`, …), a scheme another extension source holds,
+	 * a scheme registered outside extensions (RPC host URIs), or a spec the handler contradicts.
+	 *
+	 * Released when this load is torn down (session shutdown, live suspension through
+	 * `disabledExtensions`, a throwing factory) or by calling the returned function; releasing twice
+	 * is a no-op.
+	 */
+	registerUrlScheme(handler: ProtocolHandler): () => void;
 
 	/**
 	 * Register a composer shape for the interactive editor.
