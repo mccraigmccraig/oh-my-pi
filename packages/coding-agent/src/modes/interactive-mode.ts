@@ -251,6 +251,7 @@ import {
 	setSessionTerminalTitle,
 	setTerminalSessionSource,
 	setTerminalTitlePullRequest,
+	setTerminalTitleSpinnerInterval,
 	setTerminalTitleSpinnerStyle,
 	setTerminalTitleStateEnabled,
 } from "../utils/title-generator";
@@ -426,6 +427,9 @@ import {
 	cfgTuiTextSizing,
 	cfgTuiTight,
 	cfgTuiTitleSpinner,
+	cfgMotionResolved,
+	cfgTuiMotion,
+	cfgTuiSpinnerInterval,
 	cfgTuiTitleState,
 	cfgTuiVimMode,
 	cfgTuiVimModeDisplay,
@@ -501,6 +505,8 @@ const cfgLiveUiSettings = combine({
 	"tui.hyperlinks": cfgTuiHyperlinks,
 	"tui.titleState": cfgTuiTitleState,
 	"tui.titleSpinner": cfgTuiTitleSpinner,
+	"tui.spinnerInterval": cfgTuiSpinnerInterval,
+	"tui.motion": cfgTuiMotion,
 	"statusLine.preset": cfgStatusLinePreset,
 	"statusLine.leftSegments": cfgStatusLineLeftSegments,
 	"statusLine.rightSegments": cfgStatusLineRightSegments,
@@ -2650,6 +2656,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		initTerminalTitleState();
 		setTerminalTitleStateEnabled(cfgTuiTitleState.get(this.settings));
 		setTerminalTitleSpinnerStyle(cfgTuiTitleSpinner.get(this.settings));
+		setTerminalTitleSpinnerInterval(cfgMotionResolved.get(this.settings).spinnerInterval);
 		initProgramStatus();
 		setProgramStatusEnabled(cfgTerminalProgramStatus.get(this.settings));
 		// OSC 133;A starts a shell prompt and invalidates working/blocked records.
@@ -4322,6 +4329,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		if (any("tui.titleState")) setTerminalTitleStateEnabled(cfgTuiTitleState.get(this.settings));
 		if (any("tui.titleSpinner")) setTerminalTitleSpinnerStyle(cfgTuiTitleSpinner.get(this.settings));
 		if (any("terminal.programStatus")) setProgramStatusEnabled(cfgTerminalProgramStatus.get(this.settings));
+		// The title spinner follows the effective cadence: the setting, or the `tui.motion` preset.
+		if (any("tui.spinnerInterval", "tui.motion")) {
+			setTerminalTitleSpinnerInterval(cfgMotionResolved.get(this.settings).spinnerInterval);
+		}
 
 		if (
 			any(
@@ -8406,6 +8417,10 @@ export class InteractiveMode implements InteractiveModeContext {
 		// A swap during startup keeps the bootstrap submit gate until init lifts it.
 		nextEditor.disableSubmit = previousEditor.disableSubmit;
 		nextEditor.setShimmerRepaintHandler(() => this.ui.requestComponentRender(nextEditor));
+		// The new editor is fully built and bound: release the outgoing one now (drops its motion-effects
+		// subscription and pending shimmer frame). Done here, not earlier, so a throwing factory above
+		// leaves the previous editor live and intact.
+		previousEditor.setShimmerRepaintHandler(undefined);
 		this.editor = nextEditor;
 		this.composer.setEditor(nextEditor);
 		this.syncComposerShape();

@@ -185,6 +185,10 @@ import {
 	cfgTuiImeSafeCursor,
 	cfgTuiMaxInlineImages,
 	cfgTuiResizeScrollback,
+	cfgTuiSpinnerInterval,
+	cfgTuiMaxFps,
+	cfgDisplayShimmer,
+	cfgTuiMotion,
 	cfgUpdateChannel,
 } from "./modes/settings";
 import {
@@ -2058,6 +2062,19 @@ export async function runRootCommand(
 		// Apply --external-thinking CLI flag (ephemeral, not persisted)
 		if (parsedArgs.externalThinking) {
 			cfgExternalThinking.override(settingsInstance, true);
+		}
+		// Apply --spinner-interval CLI flag (ephemeral, not persisted)
+		if (parsedArgs.spinnerInterval !== undefined) {
+			cfgTuiSpinnerInterval.override(settingsInstance, parsedArgs.spinnerInterval);
+		}
+		if (parsedArgs.maxFps !== undefined) {
+			cfgTuiMaxFps.override(settingsInstance, parsedArgs.maxFps);
+		}
+		if (parsedArgs.motion !== undefined) {
+			cfgTuiMotion.override(settingsInstance, parsedArgs.motion);
+		}
+		if (parsedArgs.shimmer !== undefined) {
+			cfgDisplayShimmer.override(settingsInstance, parsedArgs.shimmer);
 		}
 
 		await logger.time(
