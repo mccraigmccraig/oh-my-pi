@@ -6,6 +6,9 @@
 
 - `StatusLineComponent.setSessionPinned()` / `setPinnedSessionIds()` / `isSessionPinned()` track pinned sessions; `session_name` prefixes the theme's pin icon for a pinned session ([#17848](https://github.com/can1357/oh-my-pi/pull/17848) by [@SuperUserA](https://github.com/SuperUserA))
 - `LinkBrowserComponent` (`overlays/link-browser`) replays a transcript fullscreen with extension link hint tags that each link keeps while it stays in view; `LinkHints` / `viewportLinkTargets()` (`render/link-hints`) share tag assignment (preferring the letters a label starts with) and painting with `Composer`; `ChatTranscriptBuilder` accepts `textRenderers` ([#16476](https://github.com/can1357/oh-my-pi/pull/16476) by [@materemias](https://github.com/materemias))
+- Added a shared spinner clock (`spinnerInterval` / `setSpinnerInterval` / `sharedSpinnerFrame`) so the Loader, live tool cards, and the status-line brand spinner all follow one configurable cadence; `0` pins every glyph static with no spinner timers ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- Added a frame-rate ceiling (`maxFps` / `setMaxFps` / `minFrameIntervalMs`) that the render scheduler and the animation timers honour; renders a keystroke is waiting on keep the fixed 30 fps cadence ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- Added a decorative-motion switch (`setMotionEffects`) that gates the status-line speculation blink and brand fade ([#14240](https://github.com/can1357/oh-my-pi/pull/14240) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
 
 ### Fixed
 
