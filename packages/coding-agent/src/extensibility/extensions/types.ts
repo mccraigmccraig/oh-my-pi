@@ -2415,6 +2415,12 @@ export interface Extension {
 	shortcuts: Map<KeyId, ExtensionShortcut>;
 	/** Set once the extension calls `registerProvider`; providers feed startup model resolution. */
 	registersProviders?: boolean;
+	/**
+	 * Undo callbacks for registrations this load made outside its own session state (process-wide
+	 * URL schemes, reply expectations a tool honours). Each runs once, when the load is torn down:
+	 * session shutdown, live suspension (`disabledExtensions`), or a factory that throws.
+	 */
+	releasers?: Array<() => void>;
 }
 
 /**

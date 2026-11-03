@@ -38,6 +38,7 @@ import { installLegacyPiSpecifierShim, loadLegacyPiModule } from "../plugins/leg
 import { getAllPluginExtensionPaths } from "../plugins/loader";
 
 import { resolvePath, withHostGuard } from "../utils";
+import { releaseExtensionRegistrations } from "./releasers";
 import type { ComposerShapeDefinition } from "@oh-my-pi/pi-tui/overlays/composer-shape-registry";
 import type {
 	AssistantTextRenderer,
@@ -435,6 +436,7 @@ function createExtension(extensionPath: string, resolvedPath: string): Extension
 		commands: new Map(),
 		flags: new Map(),
 		shortcuts: new Map(),
+		releasers: [],
 	};
 }
 
@@ -447,6 +449,7 @@ async function runExtensionFactory(
 	factory: ExtensionFactory,
 	api: ExtensionAPI,
 	runtime: IExtensionRuntime,
+	extension: Extension,
 ): Promise<void> {
 	const providerRegistrationCheckpoint = [...runtime.pendingProviderRegistrations];
 
@@ -458,6 +461,8 @@ async function runExtensionFactory(
 			runtime.pendingProviderRegistrations.length,
 			...providerRegistrationCheckpoint,
 		);
+		// The failed load never joins a runner, so nothing else would release what it registered.
+		releaseExtensionRegistrations(extension);
 		throw error;
 	}
 }
@@ -499,7 +504,7 @@ async function bindExtension(
 	try {
 		const extension = createExtension(extensionPath, imported.resolvedPath);
 		const api = new ConcreteExtensionAPI(extension, runtime, cwd, eventBus);
-		await withHostGuard(() => runExtensionFactory(factory, api, runtime));
+		await withHostGuard(() => runExtensionFactory(factory, api, runtime, extension));
 
 		return { extension, error: null };
 	} catch (err) {
@@ -520,7 +525,7 @@ export async function loadExtensionFromFactory(
 ): Promise<Extension> {
 	const extension = createExtension(name, name);
 	const api = new ConcreteExtensionAPI(extension, runtime, cwd, eventBus);
-	await runExtensionFactory(factory, api, runtime);
+	await runExtensionFactory(factory, api, runtime, extension);
 	return extension;
 }
 

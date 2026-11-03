@@ -113,6 +113,7 @@ import {
 	discoverAndLoadExtensions,
 	discoverExtensionPaths,
 	EXTENSION_HANDLER_TIMEOUT_MS,
+	type Extension,
 	type ExtensionAgentIdentity,
 	type ExtensionContext,
 	type ExtensionFactory,
@@ -128,6 +129,7 @@ import {
 	type ToolDefinition,
 	wrapRegisteredTools,
 } from "./extensibility/extensions";
+import { releaseExtensionRegistrations } from "./extensibility/extensions/releasers";
 import type { UserWaitTracker } from "./extensibility/extensions/user-wait";
 import { formatExtensionLoadNotifications } from "./extensibility/extensions/load-errors";
 import { partitionStartupExtensions, recordStartupVerdicts } from "./extensibility/extensions/startup-deferral";
@@ -2004,6 +2006,8 @@ async function createAgentSessionScoped(options: CreateAgentSessionOptions): Pro
 	// buffer — so we can't rely on it to catch startup events for the extension runner.
 	const startupCredentialDisabledEvents: CredentialDisabledEvent[] = [];
 	let credentialDisabledTarget: ExtensionRunner | undefined;
+	// The loads a startup failure must release itself when no session (and so no shutdown) follows.
+	let startupExtensions: readonly Extension[] = [];
 	// Set once the session exists; the built-in warning covers disables from then on.
 	let credentialNoticeSession: AgentSession | undefined;
 	const unsubscribeCredentialDisabled = authStorage.credentials.onDisabled(event => {
@@ -3043,6 +3047,7 @@ async function createAgentSessionScoped(options: CreateAgentSessionOptions): Pro
 				logger.error("Failed to load extension", { path, error });
 			}
 		}
+		startupExtensions = extensionsResult.extensions;
 		// Forward the source-path list (NOT the loaded instances) so subagents
 		// rebuild their own session-scoped extensions.
 		toolSession.extensionPaths = extensionPaths;
@@ -5952,6 +5957,7 @@ async function createAgentSessionScoped(options: CreateAgentSessionOptions): Pro
 				if (hasRegistered) unregisterUnlessParked();
 			} else {
 				if (hasRegistered) unregisterUnlessParked();
+				for (const extension of startupExtensions) releaseExtensionRegistrations(extension);
 				if (asyncJobManager) {
 					if (AsyncJobManager.instance() === asyncJobManager) {
 						AsyncJobManager.setInstance(undefined);

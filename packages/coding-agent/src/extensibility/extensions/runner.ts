@@ -40,6 +40,7 @@ import type { SessionManager } from "../../session/session-manager";
 import { addFileDeleteFallback, addFileWriteFallback } from "../../tools/file-write-fallback";
 import type { BranchHandler, NavigateTreeHandler, NewSessionHandler } from "../session-handler-types";
 import { accumulateToolCallResult, buildAggregatedToolCallResult } from "../shared-events";
+import { releaseExtensionRegistrations } from "./releasers";
 import { ManagedTimers } from "./managed-timers";
 import { createExtensionModelQuery } from "./model-api";
 import { trackUserWaits, type UserWaitTracker } from "./user-wait";
@@ -458,6 +459,7 @@ export async function emitSessionShutdownEvent(extensionRunner: ExtensionRunner 
 	} finally {
 		extensionRunner.disposeFileFallbacks();
 		extensionRunner.clearManagedTimers();
+		extensionRunner.releaseExtensionRegistrations();
 	}
 }
 
@@ -1204,6 +1206,9 @@ export class ExtensionRunner {
 				resumed.push(extension);
 			}
 		}
+		// A suspended load's out-of-session registrations go now and stay gone on resume: they were
+		// made by its factory or `session_start`, neither of which a resume runs again.
+		for (const extension of suspended) releaseExtensionRegistrations(extension);
 		if (suspended.length > 0 || resumed.length > 0) {
 			const active = this.#loadOrder.filter(extension => !this.#suspendedExtensions.has(extension));
 			this.extensions.splice(0, this.extensions.length, ...active);
@@ -1702,6 +1707,14 @@ export class ExtensionRunner {
 	 */
 	clearManagedTimers(): void {
 		this.#managedTimers.clearAll();
+	}
+
+	/**
+	 * Release the out-of-session registrations of every loaded extension, suspended ones included
+	 * (see {@link Extension.releasers}). Called on session shutdown.
+	 */
+	releaseExtensionRegistrations(): void {
+		for (const extension of this.getLoadedExtensions()) releaseExtensionRegistrations(extension);
 	}
 
 	/**
