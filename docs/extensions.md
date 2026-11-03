@@ -128,6 +128,7 @@ Core methods:
 - `getServiceTiers`, `setServiceTier`
 - `registerProvider`, `unregisterProvider`
 - `registerFileWriteFallback`, `registerFileDeleteFallback`
+- `registerUrlScheme`
 - `events` (shared event bus)
 
 `ExtensionAPI` methods retain their extension binding when destructured or passed as callbacks.
@@ -341,6 +342,69 @@ Payloads passed to `pi.sendMessage` are normalized before delivery
 re-exported by `session/messages.ts`): non-object payloads are coerced to string
 content under the default custom type, missing `customType`/`attribution` fields
 are defaulted, and invalid content collapses to an empty string.
+
+### Internal URL schemes (`registerUrlScheme`)
+
+`pi.registerUrlScheme(handler)` routes `<scheme>://…` URLs to your handler, the same
+`ProtocolHandler` interface the built-in schemes (`local://`, `agent://`, …) implement. It
+returns a release function.
+
+```ts
+import type { ExtensionAPI, ProtocolHandler } from "@oh-my-pi/pi-coding-agent";
+
+export default function (pi: ExtensionAPI) {
+	const notes = new Map<string, string>();
+	const handler: ProtocolHandler = {
+		scheme: "notes",
+		spec: {
+			backing: "remote",
+			selectors: "none",
+			immutable: false,
+			write: { via: "handler", payload: "text", scope: "workspace", tier: () => "write" },
+		},
+		async resolve(url, context) {
+			// context?.cwd / sessionId / session identify the calling session.
+			return { url: url.href, content: notes.get(url.host) ?? "", contentType: "text/plain" };
+		},
+		async write(url, content) {
+			notes.set(url.host, content);
+		},
+		async complete() {
+			return [...notes.keys()].map(value => ({ value }));
+		},
+	};
+	pi.registerUrlScheme(handler);
+}
+```
+
+- **Routing.** `read notes://x` calls `resolve`; `write notes://x` calls `write` when
+  `spec.write.via` is `"handler"` (the handler must have `write()` exactly then); composer tab
+  completion after `notes://` calls `complete(query)`. Optional `locate`, `enumerate`,
+  `readDirectory` and `promptDoc` hooks work as for built-in schemes.
+- **Context.** The URL router is shared by every session in the process, so never close over
+  "the" session: each call receives the caller in `context`. `read` passes the tool session's
+  `ResolveContext` (`cwd`, `sessionId`, `sessionFile`, `settings`, `agentRegistry`, the tool
+  `session`, `signal`); `write` passes a `WriteContext` (`cwd`, the tool `session`, `signal`,
+  `toolCall`); composer completion passes the focused session's `cwd`, `sessionId` and
+  `sessionFile` (no tool `session`). Other callers may pass less, so treat every field as optional.
+- **Write approval.** The write tool gates an extension scheme like any built-in non-file
+  scheme: approval asks `spec.write.tier(url, content, session)`, a scheme without `spec.write`
+  is denied at the gate as read-only, the plan-mode guard applies to handler writes unless
+  `spec.write.scope` is `"coordination"`, `"reply"` or `"device"`, and `payload: "text"` strips
+  copied hashline prefixes. Choose `scope` and `tier` as honestly as a built-in scheme would.
+- **Ownership.** A scheme belongs to one extension source: its resolved entry path (for an inline
+  SDK factory, its source id such as `<inline-0>`). `registerUrlScheme` throws for invalid
+  syntax (`^[a-z][a-z0-9+.-]*$` after lowercasing), an OMP-owned scheme, a standard one
+  (`http`, `https`, `file`, …), a scheme another extension source holds, or one registered
+  outside extensions (RPC host URI schemes).
+- **Sharing.** Every load of the same source may register the scheme: subagent sessions load the
+  same extensions, so the root and each subagent call `registerUrlScheme` with the same scheme.
+  The earliest live registration serves; when it is released the next one takes over, and the
+  scheme stays routed until the last load releases it.
+- **Teardown.** A registration is released when its load is torn down — session shutdown, live
+  suspension through `disabledExtensions` (a resume does not re-register it), or a factory that
+  throws — or when you call the returned function. Releasing twice is a no-op, and a stale release
+  never removes a later owner's handler.
 
 ## 2) Handler context (`ExtensionContext`)
 

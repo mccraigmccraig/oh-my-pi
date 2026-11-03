@@ -31,6 +31,7 @@ import type { CustomMessagePayload } from "../../session/messages";
 import type { FileDeleteFallbackHandler, FileWriteFallbackHandler } from "../../tools/file-write-fallback";
 import { isFilesystemSourcePath } from "../../tools/path-utils";
 import { InternalUrlRouter } from "../../internal-urls/router";
+import type { ProtocolHandler } from "../../internal-urls/types";
 import { EventBus } from "../../utils/event-bus";
 import * as TypeBox from "../legacy-typebox";
 import { resolveExtensionDirectory } from "./directory-resolution";
@@ -39,6 +40,7 @@ import { getAllPluginExtensionPaths } from "../plugins/loader";
 
 import { resolvePath, withHostGuard } from "../utils";
 import { releaseExtensionRegistrations } from "./releasers";
+import { claimExtensionUrlScheme } from "./url-schemes";
 import type { ComposerShapeDefinition } from "@oh-my-pi/pi-tui/overlays/composer-shape-registry";
 import type {
 	AssistantTextRenderer,
@@ -319,6 +321,22 @@ class ConcreteExtensionAPI implements ExtensionAPI, IExtensionRuntime {
 			throw new Error(`registerLinkScheme: "${scheme}" is reserved for standard or omp-internal links`);
 		}
 		if (!this.extension.linkSchemes.includes(normalized)) this.extension.linkSchemes.push(normalized);
+	}
+
+	registerUrlScheme(handler: ProtocolHandler): () => void {
+		// `=== true`: inherited keys such as `constructor` are not reserved.
+		if (STANDARD_LINK_SCHEMES[handler.scheme.toLowerCase()] === true) {
+			throw new Error(`registerUrlScheme: ${handler.scheme.toLowerCase()}:// is reserved for standard links`);
+		}
+		const releasers = (this.extension.releasers ??= []);
+		const unclaim = claimExtensionUrlScheme(InternalUrlRouter.instance(), this.extension.resolvedPath, handler);
+		const release = (): void => {
+			const index = releasers.indexOf(release);
+			if (index !== -1) releasers.splice(index, 1);
+			unclaim();
+		};
+		releasers.push(release);
+		return release;
 	}
 
 	registerComposerShape(definition: ComposerShapeDefinition): void {
