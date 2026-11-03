@@ -145,6 +145,7 @@ import type {
 } from "../shared-events";
 import type { SlashCommandInfo } from "../slash-commands";
 import type { TerminalLaunchRequest, TerminalLaunchResult } from "../../subprocess/terminal-launch";
+import type { ExpectedReplies } from "./expected-replies";
 
 export type { OverlayHandle, OverlayOptions } from "@oh-my-pi/pi-tui";
 export type { AppKeybinding, KeybindingsManager } from "@oh-my-pi/pi-tui/app-keybindings";
@@ -2106,6 +2107,12 @@ export interface ExtensionAPI {
 	/** Set the session name. Persists to the session file. */
 	setSessionName(name: string): Promise<void>;
 
+	/**
+	 * Replies this session's agent awaits from peers the built-in tools cannot see, such as agents
+	 * in other processes behind a bridge. See {@link ExtensionReplies}.
+	 */
+	replies: ExtensionReplies;
+
 	// =========================================================================
 	// Provider Registration
 	// =========================================================================
@@ -2155,6 +2162,33 @@ export interface ExtensionAPI {
 
 	/** Shared event bus for extension communication. */
 	events: EventBus;
+}
+
+/** Options for {@link ExtensionReplies.expect}. */
+export interface ExpectReplyOptions {
+	/**
+	 * The peer promised a later answer, like an IRC progress note: the expectation stays awaited in
+	 * the agent's later runs until released. Without it, an expectation counts only in the run it
+	 * was recorded in, like an unanswered IRC question.
+	 */
+	promised?: boolean;
+}
+
+/** `pi.replies`: replies the extension's own agent awaits, which the `wait` tool honours. */
+export interface ExtensionReplies {
+	/**
+	 * Record that this session's agent awaits a reply from `peerId`, an opaque display id (for
+	 * example `@murmur/leia`) that need not name a registered agent. While any expectation is
+	 * unreleased, `wait` blocks for the reply instead of returning "Nothing to wait for"; a message
+	 * that reaches the agent mid-wait (e.g. the answer injected with `pi.sendUserMessage(text,
+	 * { deliverAs: "steer" })`) ends it as usual, and a wait that runs out names the peers still
+	 * awaited. Releasing the last expectation a blocked `wait` depended on ends that wait.
+	 *
+	 * Returns the release function: call it once the reply has been delivered, or when the peer
+	 * is gone. Release is idempotent. Expectations are scoped to this session and are released
+	 * with the extension load: session shutdown, live disable, or a factory that throws.
+	 */
+	expect(peerId: string, options?: ExpectReplyOptions): () => void;
 }
 
 // ============================================================================
@@ -2330,6 +2364,8 @@ export interface ExtensionRuntimeState {
 	registerProvider(name: string, config: ProviderConfig, sourceId: string): void;
 	/** Remove a queued or initialized provider registration. */
 	unregisterProvider(name: string, sourceId: string): void;
+	/** Replies the session's agent awaits through `pi.replies.expect`; read by the `wait` tool. */
+	readonly expectedReplies: ExpectedReplies;
 }
 
 /** Action implementations for ExtensionAPI methods. */
