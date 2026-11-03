@@ -4,6 +4,7 @@
 
 ### Added
 
+- Added `pi.replies.expect(peerId)` for extensions that bridge to agents in other processes: `wait` blocks for that peer's reply instead of returning "Nothing to wait for" until the extension releases it ([#XXXXX](https://github.com/can1357/oh-my-pi/pull/XXXXX) by [@mccraigmccraig](https://github.com/mccraigmccraig))
 - Added the default-off `providers.openaiResponsesWebsockets` setting for catalog-supported standard Responses models, independently of Codex; model/request `false` always disables it ([#17354](https://github.com/can1357/oh-my-pi/pull/17354) by [@TatsukiMeng](https://github.com/TatsukiMeng))
 - Pinned sessions show a pin beside their title in the status line and the band composer's title, and `/unpin [session id]` unpins a session ([#17848](https://github.com/can1357/oh-my-pi/pull/17848) by [@SuperUserA](https://github.com/SuperUserA))
 - Added a fullscreen extension link browser for picking links already in terminal scrollback: press Alt+O again (or Page Up) while link tags are shown, or Alt+O with no extension link on screen ([#16476](https://github.com/can1357/oh-my-pi/pull/16476) by [@materemias](https://github.com/materemias))
