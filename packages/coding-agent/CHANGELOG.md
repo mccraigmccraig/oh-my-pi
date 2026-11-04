@@ -7,6 +7,11 @@
 - Advisors no longer get repeat-read warnings for reads another advisor made; each advisor now keeps its own tool state (snapshots, conflict history, repeat-read counts) ([#18834](https://github.com/can1357/oh-my-pi/issues/18834))
 - `/new` and switching sessions now start tools fresh: `conflict://` ids, already-reported diagnostics and repeat-read counts no longer carry over from the previous conversation, for the main agent and advisors alike
 
+### Added
+
+- Added `pi.registerUrlScheme` so extensions can serve their own `<scheme>://` URLs to `read`, `write` and composer completion; the root session and each subagent keep their own handler, a suspended extension's scheme pauses until it resumes, and it is released with the extension ([#18059](https://github.com/can1357/oh-my-pi/pull/18059) by [@mccraigmccraig](https://github.com/mccraigmccraig))
+- Added `pi.onSuspensionChange(listener)` so an extension can pause work it drives itself (a socket, a timer) while a live `disabledExtensions` edit suspends it, and resume it after ([#18059](https://github.com/can1357/oh-my-pi/pull/18059) by [@mccraigmccraig](https://github.com/mccraigmccraig))
+
 ## [18.20.0] - 2026-11-12
 
 ### Breaking Changes
