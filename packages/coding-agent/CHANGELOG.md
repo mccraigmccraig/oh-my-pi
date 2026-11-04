@@ -7,6 +7,11 @@
 - Advisors no longer get repeat-read warnings for reads another advisor made; each advisor now keeps its own tool state (snapshots, conflict history, repeat-read counts) ([#18834](https://github.com/can1357/oh-my-pi/issues/18834))
 - `/new` and switching sessions now start tools fresh: `conflict://` ids, already-reported diagnostics and repeat-read counts no longer carry over from the previous conversation, for the main agent and advisors alike
 
+### Added
+
+- Added `pi.replies.expect(peerId)` for extensions that bridge to agents in other processes: `wait` blocks for that peer's reply instead of returning "Nothing to wait for" until the extension releases it; the expectation pauses while a live `disabledExtensions` edit suspends the extension and goes with it at teardown ([#18058](https://github.com/can1357/oh-my-pi/pull/18058) by [@mccraigmccraig](https://github.com/mccraigmccraig))
+- Added `pi.onSuspensionChange(listener)` so an extension can pause work it drives itself (a socket, a timer) while a live `disabledExtensions` edit suspends it, and resume it after ([#18058](https://github.com/can1357/oh-my-pi/pull/18058) by [@mccraigmccraig](https://github.com/mccraigmccraig))
+
 ## [18.20.0] - 2026-11-12
 
 ### Breaking Changes
