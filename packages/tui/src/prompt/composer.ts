@@ -445,12 +445,20 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 		}
 		this.#rowsBelow = new Map(ends.map(({ root, end }) => [root, after.length - end]));
 		const transientFloor = this.#syncTransientFloor(transientRows);
-		// Eligible chrome excludes user-driven transient rows above their resting height and every
-		// self-clearing row; contraction, floor and rebaseline all use it.
-		const eligibleChrome = after.length - (transientRows - transientFloor) - selfClearingRows;
-		const promotedChromeContracted = this.#chromeFloorPromoted && eligibleChrome < (this.#chromeFloor ?? 0);
-		this.#chromeFloor = Math.min(this.#chromeFloor ?? eligibleChrome, eligibleChrome);
-		this.#rebaselineChromeFloor(this.#runActive || transcript.hasActiveBlock(), eligibleChrome);
+		// Billable chrome excludes only user-driven transient rows above their resting height. Eligible
+		// chrome also excludes every self-clearing row: those start outside the floor, so the rows a
+		// HUD displaces are held back for it to clear. A HUD that is still up once the idle settle
+		// window has passed is billed like any other idle chrome (see #rebaselineChromeFloor): held
+		// back rows are on no screen and in no scrollback, and a restored todo list or a subagent
+		// panel can stay up for the rest of the session.
+		const billableChrome = after.length - (transientRows - transientFloor);
+		const eligibleChrome = billableChrome - selfClearingRows;
+		const promotedChromeContracted = this.#chromeFloorPromoted && billableChrome < (this.#chromeFloor ?? 0);
+		// Contraction follows immediately: the floor never exceeds what is billable now, and before a
+		// promotion it never exceeds the eligible chrome either.
+		const floorCap = this.#chromeFloorPromoted ? billableChrome : eligibleChrome;
+		this.#chromeFloor = Math.min(this.#chromeFloor ?? eligibleChrome, floorCap);
+		this.#rebaselineChromeFloor(this.#runActive || transcript.hasActiveBlock(), billableChrome);
 		const belowFloor = this.#preferences.completeScrollback ? after.length : this.#chromeFloor;
 		// Offer history under capacity pressure only: blocks stay live (and keep
 		// reflowing to the current width) while the screen has room. A batch
