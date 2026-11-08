@@ -14,7 +14,7 @@
 ### Fixed
 
 - Closing an overlay that others were opened over no longer leaves them returning focus to it once they close ([#16476](https://github.com/can1357/oh-my-pi/pull/16476))
-- Fixed transcript paragraphs a few turns above the composer going missing — from the screen and from scrollback, at a place that moved with every resize — while a todo list or subagent panel stayed up after a turn; a HUD that outlives the idle settle window now retires the rows it displaces ([#XXXXX](https://github.com/can1357/oh-my-pi/pull/XXXXX) by [@mccraigmccraig](https://github.com/mccraigmccraig))
+- Fixed transcript paragraphs a few turns above the composer going missing — from the screen and from scrollback, at a place that moved with every resize — while a todo list or subagent panel stayed up after a turn; a HUD that outlives the idle settle window now retires the rows it displaces ([#18510](https://github.com/can1357/oh-my-pi/pull/18510) by [@mccraigmccraig](https://github.com/mccraigmccraig))
 
 ## [18.16.0] - 2026-11-02
 
