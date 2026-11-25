@@ -11,6 +11,7 @@
 ### Fixed
 
 - Fixed `-p` print mode dying with `AgentBusyError` when a bridged peer message woke the session before the initial prompt dispatched; the prompt now queues behind the wake turn ([#14071](https://github.com/can1357/oh-my-pi/pull/14071) by [@mccraigmccraig](https://github.com/mccraigmccraig)).
+- In a compiled omp with no `bun` on PATH, `bun` in an eval cell now runs bun instead of starting a headless omp, and an `omp` started from the bash tool or a JS or Python eval cell without a terminal needs `-p` ([#19241](https://github.com/can1357/oh-my-pi/pull/19241) by [@mccraigmccraig](https://github.com/mccraigmccraig))
 
 ## [19.2.1] - 2026-11-25
 
